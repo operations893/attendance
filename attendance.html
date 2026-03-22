@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Mark Attendance</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f2f8;--card:#fff;--border:#e2e6f0;
+  --accent:#4f46e5;--green:#059669;--red:#dc2626;
+  --text:#1e1b4b;--muted:#6b7280;--radius:12px;--tr:.18s ease
+}
+body{background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;padding:14px 12px 40px;margin:0}
+.hdr{background:linear-gradient(130deg,#4f46e5,#7c3aed);border-radius:14px;padding:16px 20px;margin-bottom:12px}
+.hdr h1{font-family:"Space Mono",monospace;font-size:16px;color:#fff;font-weight:700}
+.hdr p{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+.sec{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:13px 15px;margin-bottom:10px}
+.lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.req{color:var(--red)}
+.ng{display:flex;flex-wrap:wrap;gap:6px}
+.np{padding:7px 13px;border-radius:50px;border:1.5px solid var(--border);background:#f8f9ff;color:var(--text);font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all var(--tr);white-space:nowrap}
+.np:hover{border-color:var(--accent);background:#eef2ff;color:var(--accent)}
+.np.s{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
+.eg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.eb{padding:11px;border-radius:var(--radius);border:1.5px solid var(--border);background:#f8f9ff;color:var(--muted);font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all var(--tr)}
+.eb:hover{border-color:var(--accent);color:var(--accent);background:#eef2ff}
+.eb.en{background:#dcfce7;border-color:var(--green);color:var(--green)}
+.eb.ex{background:#fee2e2;border-color:var(--red);color:var(--red)}
+.cb{background:#111827;border-radius:var(--radius);overflow:hidden;position:relative;aspect-ratio:4/3;width:100%}
+video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1)}
+canvas{display:none}
+.tsl{position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,.55);padding:3px 7px;border-radius:5px;font-family:"Space Mono",monospace;font-size:10px;color:#86efac;display:none;z-index:9;pointer-events:none}
+.tsl.on{display:block}
+.lb{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.5);border-radius:20px;padding:2px 7px;display:none;align-items:center;gap:4px;font-family:"Space Mono",monospace;font-size:9px;color:#fff;z-index:9}
+.lb.on{display:flex}
+.ld{width:5px;height:5px;border-radius:50%;background:#ef4444;animation:bl 1.2s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.2}}
+.pv{position:absolute;inset:0;z-index:5;display:none}
+.pv.on{display:block}
+.pv img{width:100%;height:100%;object-fit:cover}
+.pvt{position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,.55);padding:3px 7px;border-radius:5px;font-family:"Space Mono",monospace;font-size:10px;color:#86efac}
+.cld{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#111827;z-index:20;padding:12px;text-align:center}
+.cld.h{display:none}
+.sr{width:28px;height:28px;border:3px solid rgba(99,102,241,.3);border-top-color:#6366f1;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.cld p{font-size:11px;color:#9ca3af;padding:0 6px}
+.tap-btn{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:13px;font-family:"DM Sans",sans-serif;font-weight:700;cursor:pointer}
+.tap-btn:active{opacity:.8}
+.cbt{display:flex;gap:7px;margin-top:8px}
+.bcp{flex:1;padding:10px;border-radius:var(--radius);border:none;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.18s}
+.bcp:hover:not(:disabled){transform:translateY(-1px)}
+.bcp:disabled{opacity:.4;cursor:not-allowed}
+.brt{padding:10px 13px;border-radius:var(--radius);border:1.5px solid var(--border);background:#fff;color:var(--muted);font-family:"DM Sans",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.18s;display:none}
+.brt.on{display:block}
+.brt:hover{border-color:var(--red);color:var(--red)}
+textarea{width:100%;background:#f8f9ff;border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:"DM Sans",sans-serif;font-size:13px;padding:10px 12px;resize:vertical;min-height:56px;outline:none;transition:.18s}
+textarea:focus{border-color:var(--accent);background:#fff}
+.bsub{width:100%;padding:13px;border-radius:var(--radius);border:none;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(5,150,105,.3);transition:.18s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.bsub:hover:not(:disabled){transform:translateY(-1px)}
+.bsub:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.err{font-size:11px;color:var(--red);margin-top:5px;display:none}
+.err.on{display:block}
+.res{padding:11px 14px;border-radius:var(--radius);font-size:13px;font-weight:600;text-align:center;display:none;margin-bottom:8px;line-height:1.5}
+.res.ok{background:#dcfce7;color:var(--green);border:1.5px solid var(--green);display:block}
+.res.er{background:#fee2e2;color:var(--red);border:1.5px solid var(--red);display:block}
+.sp2{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:4px}
+.loading-names{font-size:12px;color:var(--muted);padding:6px 0}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>&#x1F4CB; Mark Attendance</h1>
+  <p>Fill all fields, capture your photo, then submit</p>
+</div>
+
+<!-- Name -->
+<div class="sec">
+  <div class="lbl">&#x1F464; Name <span class="req">*</span></div>
+  <div class="ng" id="ng"><span class="loading-names">Loading names&hellip;</span></div>
+  <div class="err" id="en">Please select your name.</div>
+</div>
+
+<!-- Entry / Exit -->
+<div class="sec">
+  <div class="lbl">&#x1F6AA; Entry / Exit <span class="req">*</span></div>
+  <div class="eg">
+    <button class="eb" id="be" onclick="setEE('Entry')">&#x2705; Entry</button>
+    <button class="eb" id="bx" onclick="setEE('Exit')">&#x1F534; Exit</button>
+  </div>
+  <div class="err" id="ee">Please select Entry or Exit.</div>
+</div>
+
+<!-- Camera -->
+<div class="sec">
+  <div class="lbl">&#x1F4F7; Webcam Photo <span class="req">*</span></div>
+  <div class="cb">
+    <video id="vid" autoplay playsinline muted></video>
+    <canvas id="cvs"></canvas>
+    <div class="pv" id="pv">
+      <img id="pi" src="" alt=""/>
+      <div class="pvt" id="pt"></div>
+    </div>
+    <div class="tsl" id="tsl"></div>
+    <div class="lb"  id="lb"><span class="ld"></span>LIVE</div>
+    <div class="cld" id="cld">
+      <button class="tap-btn" onclick="startCam()">&#x1F4F7; Tap to Start Camera</button>
+      <p>Tap required on iPhone &amp; iPad</p>
+    </div>
+  </div>
+  <div class="cbt">
+    <button class="bcp" id="bcp" onclick="capture()" disabled>&#x1F4F8; Capture Photo</button>
+    <button class="brt" id="brt" onclick="retake()">&#x1F501; Retake</button>
+  </div>
+  <div class="err" id="ep">Please capture a photo first.</div>
+</div>
+
+<!-- Remarks -->
+<div class="sec">
+  <div class="lbl">&#x1F4AC; Remarks
+    <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:10px;color:var(--muted)">(optional)</span>
+  </div>
+  <textarea id="rem" placeholder="Any notes..."></textarea>
+</div>
+
+<div class="res" id="res"></div>
+<button class="bsub" id="bsub" onclick="doSubmit()">&#x2705; Submit Attendance</button>
+
+<script>
+// ====================================================================
+//  STEP 1: Paste your Apps Script /exec URL here
+// ====================================================================
+var EXEC_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+// ====================================================================
+
+var sName = "", sEE = "", captured = null, capTime = null, stream = null, tiv = null;
+
+// ── Load names from Apps Script API ──────────────────────────
+// Apps Script returns JSON with CORS headers so this works cross-origin
+fetch(EXEC_URL + "?action=names")
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    var names = (data && Array.isArray(data.names)) ? data.names : [];
+    renderNames(names);
+  })
+  .catch(function(){
+    // If fetch fails, show a manual text input as fallback
+    document.getElementById("ng").innerHTML =
+      '<input id="nameInput" placeholder="Type your name" '
+      + 'style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:DM Sans,sans-serif;font-size:13px;outline:none"'
+      + ' oninput="sName=this.value.trim();document.getElementById(\'en\').classList.remove(\'on\')">';
+  });
+
+function renderNames(names) {
+  var g = document.getElementById("ng");
+  if (!names.length) {
+    g.innerHTML = '<span style="color:var(--muted);font-size:12px">No names found.</span>';
+    return;
+  }
+  g.innerHTML = "";
+  names.forEach(function(n) {
+    var b = document.createElement("button");
+    b.className = "np";
+    b.textContent = n;
+    b.onclick = function() {
+      document.querySelectorAll(".np").forEach(function(p){ p.classList.remove("s"); });
+      b.classList.add("s");
+      sName = n;
+      document.getElementById("en").classList.remove("on");
+    };
+    g.appendChild(b);
+  });
+}
+
+// ── Entry / Exit ──────────────────────────────────────────────
+function setEE(v) {
+  sEE = v;
+  document.getElementById("be").className = "eb" + (v === "Entry" ? " en" : "");
+  document.getElementById("bx").className = "eb" + (v === "Exit"  ? " ex" : "");
+  document.getElementById("ee").classList.remove("on");
+}
+
+// ── Timestamp ─────────────────────────────────────────────────
+function fmt(d) {
+  var p = function(n){ return String(n).padStart(2,"0"); };
+  return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()
+       +" "+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+}
+
+// ── Start camera ──────────────────────────────────────────────
+// Plain .then()/.catch() — no async/await for maximum iOS compatibility.
+// Called ONLY from a direct user tap.
+function startCam() {
+  var cld = document.getElementById("cld");
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    cld.className = "cld";
+    cld.innerHTML = '<p style="color:#f87171;font-size:11px">'
+      + '&#x274C; Camera not available.<br>'
+      + 'Open this page in <strong>Safari</strong> and allow camera in Settings.</p>';
+    return;
+  }
+
+  cld.className = "cld";
+  cld.innerHTML = '<div class="sr"></div><p>Starting camera&hellip;</p>';
+
+  // Simplest possible constraint — works on all iOS versions
+  navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    .then(function(s) {
+      stream = s;
+      var v = document.getElementById("vid");
+      v.srcObject = stream;
+      var activated = false;
+      function activate() {
+        if (activated) return; activated = true;
+        cld.className = "cld h";
+        document.getElementById("bcp").disabled = false;
+        var tl = document.getElementById("tsl");
+        tl.classList.add("on");
+        document.getElementById("lb").classList.add("on");
+        tiv = setInterval(function(){ tl.textContent = fmt(new Date()); }, 1000);
+      }
+      v.onloadedmetadata = activate;
+      v.oncanplay        = activate;
+      setTimeout(activate, 3000);
+    })
+    .catch(function(e) {
+      var msg;
+      if      (e.name === "NotAllowedError" || e.name === "PermissionDeniedError")
+        msg = "Camera blocked.<br>iPhone: Settings &rsaquo; Safari &rsaquo; Camera &rsaquo; Allow";
+      else if (e.name === "NotFoundError")
+        msg = "No camera found.";
+      else if (e.name === "NotReadableError" || e.name === "AbortError")
+        msg = "Camera busy. Close FaceTime/Snapchat then try again.";
+      else
+        msg = "Error: " + (e.name || "Unknown");
+
+      cld.innerHTML = '<p style="color:#f87171;font-size:11px">&#x274C; ' + msg + '</p>'
+        + '<button class="tap-btn" style="font-size:12px;padding:9px 16px;margin-top:8px" onclick="startCam()">&#x1F504; Try Again</button>';
+    });
+}
+
+// ── Capture ───────────────────────────────────────────────────
+function capture() {
+  var v = document.getElementById("vid"), c = document.getElementById("cvs"), now = new Date();
+  var mw = 800, sw = v.videoWidth||640, sh = v.videoHeight||480, sc = sw>mw ? mw/sw : 1;
+  c.width = Math.round(sw*sc); c.height = Math.round(sh*sc);
+  var ctx = c.getContext("2d");
+  ctx.translate(c.width,0); ctx.scale(-1,1);
+  ctx.drawImage(v,0,0,c.width,c.height);
+  ctx.setTransform(1,0,0,1,0,0);
+  var t = fmt(now), tw = ctx.measureText(t).width;
+  ctx.font = "bold 13px monospace";
+  ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(6,c.height-30,tw+14,24);
+  ctx.fillStyle = "#86efac";        ctx.fillText(t,12,c.height-12);
+  captured = c.toDataURL("image/jpeg",.70);
+  capTime  = fmt(now);
+  document.getElementById("pi").src = captured;
+  document.getElementById("pt").textContent = t;
+  document.getElementById("pv").classList.add("on");
+  document.getElementById("tsl").classList.remove("on");
+  document.getElementById("lb").classList.remove("on");
+  if (stream) stream.getTracks().forEach(function(tk){ tk.stop(); });
+  clearInterval(tiv);
+  document.getElementById("bcp").style.display = "none";
+  document.getElementById("brt").classList.add("on");
+  document.getElementById("ep").classList.remove("on");
+}
+
+// ── Retake ────────────────────────────────────────────────────
+function retake() {
+  captured = null; capTime = null;
+  document.getElementById("pv").classList.remove("on");
+  var bcp = document.getElementById("bcp");
+  bcp.style.display = ""; bcp.disabled = true;
+  document.getElementById("brt").classList.remove("on");
+  var cld = document.getElementById("cld");
+  cld.className = "cld";
+  cld.innerHTML = '<button class="tap-btn" onclick="startCam()">&#x1F4F7; Tap to Restart Camera</button>'
+    + '<p>Tap to restart</p>';
+}
+
+// ── Submit ────────────────────────────────────────────────────
+function doSubmit() {
+  var ok = true;
+  if (!sName)    { document.getElementById("en").classList.add("on"); ok=false; }
+  else             document.getElementById("en").classList.remove("on");
+  if (!sEE)      { document.getElementById("ee").classList.add("on"); ok=false; }
+  else             document.getElementById("ee").classList.remove("on");
+  if (!captured) { document.getElementById("ep").classList.add("on"); ok=false; }
+  else             document.getElementById("ep").classList.remove("on");
+  if (!ok) return;
+
+  var btn = document.getElementById("bsub");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="sp2"></span>Saving&hellip;';
+  document.getElementById("res").className = "res";
+
+  fetch(EXEC_URL, {
+    method:  "POST",
+    mode:    "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify({
+      name:      sName,
+      entryExit: sEE,
+      imageData: captured,
+      remarks:   document.getElementById("rem").value.trim(),
+      timestamp: capTime || fmt(new Date())
+    })
+  })
+  .then(function() {
+    document.getElementById("res").textContent = "✅ Attendance submitted successfully!";
+    document.getElementById("res").className   = "res ok";
+    btn.style.display = "none";
+  })
+  .catch(function(err) {
+    document.getElementById("res").textContent = "❌ Network error: " + err.message;
+    document.getElementById("res").className   = "res er";
+    btn.disabled  = false;
+    btn.innerHTML = "&#x2705; Submit Attendance";
+  });
+}
+</script>
+</body>
+</html>
